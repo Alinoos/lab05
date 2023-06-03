@@ -372,9 +372,236 @@ $ cd ..
 
 ```
 3. Настройте сборочную процедуру на **TravisCI**.
+```sh
+$ mkdir .github
+$ cd ~/lab05/.github
+$ mkdir workflows
+$ cd ~/lab05/.github/workflows
+$ cat >> Action.yml << EOF
+>EOF
+$ nano Action.yml
+name: CMake
+
+on:
+ push:
+  branches: [master]
+ pull_request:
+  branches: [master]
+
+jobs:
+ build_Linux:
+
+  runs-on: ubuntu-latest
+
+  steps:
+  - uses: actions/checkout@v3
+
+  - name: Adding gtest
+    run: git clone https://github.com/google/googletest.git third-party/gtest -b release-1.11.0
+
+  - name: Install lcov
+    run: sudo apt-get install -y lcov
+
+  - name: Config banking with tests
+    run: cmake -H. -B ${{github.workspace}}/build -DBUILD_TESTS=ON
+
+  - name: Build banking
+    run: cmake --build ${{github.workspace}}/build
+
+  - name: Run tests
+    run: |
+      build/check
+      cmake --build ${{github.workspace}}/build --target test -- ARGS=--verbose
+
+$ git add Action.yml
+$ git commit -m "Action - 1"
+[master 88b774a] Action - 1
+ 1 file changed, 32 insertions(+)
+ create mode 100644 .github/workflows/Action.yml
+$ git push origin master
+Username for 'https://github.com': Alinoos
+Password for 'https://Alinoos@github.com': 
+Перечисление объектов: 6, готово.
+Подсчет объектов: 100% (6/6), готово.
+При сжатии изменений используется до 8 потоков
+Сжатие объектов: 100% (3/3), готово.
+Запись объектов: 100% (5/5), 699 байтов | 699.00 КиБ/с, готово.
+Всего 5 (изменений 1), повторно использовано 0 (изменений 0), повторно использовано пакетов 0
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+remote: This repository moved. Please use the new location:
+remote:   https://github.com/Alinoos/lab05.git
+To https://github.com/alinoos/lab05.git
+   f9f1123..88b774a  master -> master
+$ cd ~
+```
+4. Настройте [Coveralls.io](https://coveralls.io/).
+$ cat >> lcov.info << EOF
+>EOF
+
+$ git add lcov.info
+$ git commit -m "lcov - 1"
+[master d254cf0] lcov - 1
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 coverage/lcov.info
+$ git push origin master
+Username for 'https://github.com': Alinoos
+Password for 'https://Alinoos@github.com': 
+Перечисление объектов: 5, готово.
+Подсчет объектов: 100% (5/5), готово.
+При сжатии изменений используется до 8 потоков
+Сжатие объектов: 100% (2/2), готово.
+Запись объектов: 100% (4/4), 312 байтов | 312.00 КиБ/с, готово.
+Всего 4 (изменений 1), повторно использовано 0 (изменений 0), повторно использовано пакетов 0
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+remote: This repository moved. Please use the new location:
+remote:   https://github.com/Alinoos/lab05.git
+To https://github.com/alinoos/lab05.git
+   0032b4e..d254cf0  master -> master
+$ cd ..
+$ nano CMakeLists.txt 
+$ git add CMakeLists.txt
+$ git commit -m "CMake - 2"
+[master 05761a3] CMake - 2
+ 1 file changed, 13 insertions(+)
+
+cmake_minimum_required(VERSION 3.4)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+option(BUILD_TEST "Build tests" OFF)
+
+if(BUILD_TESTS)
+  add_compile_options(--coverage)
+endif()
+
+option(COVERAGE "Check coverage" ON)
+
+project(banking)
+
+add_library(banking STATIC banking/Account.cpp banking/Transaction.cpp)
+target_include_directories(banking PUBLIC banking/)
+
+target_link_libraries(banking gcov)
+
+if(BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(third-party/gtest)
+  file(GLOB BANKING_TEST_SOURCES tests/tests.cpp)
+  add_executable(check tests/tests.cpp)
+  target_link_libraries(check banking gtest_main gmock_main)
+  add_test(NAME check COMMAND check)
+endif()
+
+if (COVERAGE)
+	target_compile_options(check PRIVATE --coverage)
+	target_link_libraries(check --coverage)
+endif()
+$ git commit -m "CMake - 2"
+$ git push origin master
+[master 05761a3] CMake - 2
+ 1 file changed, 13 insertions(+)
+$ git push origin master
+Username for 'https://github.com': Alinoos
+Password for 'https://Alinoos@github.com': 
+Перечисление объектов: 5, готово.
+Подсчет объектов: 100% (5/5), готово.
+При сжатии изменений используется до 8 потоков
+Сжатие объектов: 100% (3/3), готово.
+Запись объектов: 100% (3/3), 432 байта | 432.00 КиБ/с, готово.
+Всего 3 (изменений 2), повторно использовано 0 (изменений 0), повторно использовано пакетов 0
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+remote: This repository moved. Please use the new location:
+remote:   https://github.com/Alinoos/lab05.git
+To https://github.com/alinoos/lab05.git
+   d254cf0..05761a3  master -> master
+$ cd ~/lab-05/.github/workflows   
+$ cd ..
+$ cd ~/lab05/.github/workflows
+$ nano Action.yml
 
 
+name: CMake
 
+on:
+ push:
+  branches: [master]
+ pull_request:
+  branches: [master]
+
+jobs:
+ build_Linux:
+
+  runs-on: ubuntu-latest
+
+  steps:
+  - uses: actions/checkout@v3
+
+  - name: Adding gtest
+    run: git clone https://github.com/google/googletest.git third-party/gtest -b release-1.11.0
+
+  - name: Install lcov
+    run: sudo apt-get install -y lcov
+
+  - name: Config banking with tests
+    run: cmake -H. -B ${{github.workspace}}/build -DBUILD_TESTS=ON
+
+  - name: Build banking
+    run: cmake --build ${{github.workspace}}/build
+
+  - name: Run tests
+    run: |
+      build/check
+      cmake --build ${{github.workspace}}/build --target test -- ARGS=--verbose
+
+  - name: Do lcov stuff
+    run: lcov -c -d build/CMakeFiles/banking.dir/banking/ --include *.cpp --output-file ./coverage/lcov.info
+
+  - name: Publish to coveralls.io
+    uses: coverallsapp/github-action@v1.1.2
+    with:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+
+$ git add Action.yml
+$ git commit -m "Action - 2"
+[master 4b519e5] Action - 2
+ 1 file changed, 8 insertions(+)
+$ git push origin master
+Username for 'https://github.com': Alinoos
+Password for 'https://Alinoos@github.com': 
+Перечисление объектов: 9, готово.
+Подсчет объектов: 100% (9/9), готово.
+При сжатии изменений используется до 8 потоков
+Сжатие объектов: 100% (3/3), готово.
+Запись объектов: 100% (5/5), 594 байта | 594.00 КиБ/с, готово.
+Всего 5 (изменений 2), повторно использовано 0 (изменений 0), повторно использовано пакетов 0
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+remote: This repository moved. Please use the new location:
+remote:   https://github.com/Alinoos/lab05.git
+To https://github.com/alinoos/lab05.git
+ 05761a3..4b519e5  master -> master
+$ cd ..
+$ nano README.md 
+[![Coverage Status](https://coveralls.io/repos/github/Alinoos/laba05/badge.svg?branch=master)](https://coveralls.io/github/Alinoos/lab05?branch=master)
+$ git add README.md
+$ git commit -m "README - 2"
+[master ee0f601] README - 2
+ 1 file changed, 2 insertions(+)
+ create mode 100644 .github/README.md
+ $ git push origin master
+Username for 'https://github.com': Alinoos
+Password for 'https://Alinoos@github.com': 
+Перечисление объектов: 6, готово.
+Подсчет объектов: 100% (6/6), готово.
+При сжатии изменений используется до 8 потоков
+Сжатие объектов: 100% (4/4), готово.
+Запись объектов: 100% (4/4), 455 байтов | 455.00 КиБ/с, готово.
+Всего 4 (изменений 1), повторно использовано 0 (изменений 0), повторно использовано пакетов 0
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+remote: This repository moved. Please use the new location:
+remote:   https://github.com/Alinoos/lab05.git
+To https://github.com/alinoos/lab05.git
+   4b519e5..ee0f601  master -> master
 
 
 
