@@ -435,6 +435,7 @@ To https://github.com/alinoos/lab05.git
 $ cd ~
 ```
 4. Настройте [Coveralls.io](https://coveralls.io/).
+```sh
 $ cat >> lcov.info << EOF
 >EOF
 
@@ -602,7 +603,7 @@ remote: This repository moved. Please use the new location:
 remote:   https://github.com/Alinoos/lab05.git
 To https://github.com/alinoos/lab05.git
    4b519e5..ee0f601  master -> master
-
+```
 
 
 
